@@ -152,6 +152,7 @@ Abstract text.
 \section*{Reinforce}
 
 \subsection*{Trajectory or path or episode}
+
 $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, \dots, s_T)$
 
 Where:
@@ -202,12 +203,12 @@ $\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [\nabla_\thet
 
 In this equation we have for $\pi_\theta(\tau)$:
 
-$\pi_\theta(\tau) = p(s_0) \prod_{t=0}^T \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)$
+$\pi_\theta(\tau) = p(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)$
 
 if we take log of this product we get sum:
 
-$\log \pi_\theta(\tau) = \log p(s_0) +  \sum_{t=0}^T \log \pi_\theta(a_t|s_t) + \log  p(s_{t+1}|s_t, a_t)$
-
+$\log \pi_\theta(\tau) = \log p(s_0) +  \sum_{t=0}^{T-1} \log \pi_\theta(a_t|s_t) + \sum_{t=0}^{T-1} \log  p(s_{t+1}|s_t, a_t)
+$
 
 Now take gradient with respect to $\theta$, terms not depending on $\theta$ drop.
 
@@ -229,7 +230,7 @@ Now we can extract Q and value functions from the expection above:
 
 $Q_{\pi_\theta}(s_t, a_t) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{k=t}^T \gamma^{k-t} r_k | s_t, a_t $
 
-$V_{\pi_\theta}(s_t, a_t) = \mathbb{E}_{a \sim \pi_\theta(s)} Q_{\pi_\theta}(a_t, s_t)$
+$V_{\pi_\theta}(s_t) = \mathbb{E}_{a \sim \pi_\theta(s)} Q_{\pi_\theta}(a_t, s_t)$
 
 This is a relative time which allows for bellman expectation form(see below in Useful identities section).
 
@@ -278,7 +279,7 @@ This is where the state distribution appears.
 
 Put the factored equation into $\nabla_\theta J(\theta)$:
 
-$\nabla_\theta J(\theta) = \sum_s \left( \sum_{t=0}^T \gamma^t P(s_t=s) \right) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+$ \sum_s \left( \sum_{t=0}^T \gamma^t P(s_t=s) \right) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
 
 Define the discounted state visitation distribution:
 
@@ -286,9 +287,13 @@ $d_\gamma^{\pi_\theta}(s) = \sum_{t=0}^T \gamma^t P(s_t=s)$
 
 Note: it is unnormalised.
 
+Proper distribution:
+
+$d^{\pi_\theta}(s) = (1-\gamma) \sum_{t=0}^{T} \gamma^t d^{\pi_\theta}_t(s)$
+
 Then
 
-$\nabla_\theta J(\theta) = \sum_s d_\gamma^{\pi_\theta}(s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+$\nabla_\theta J(\theta) = \sum_s d^{\pi_\theta}(s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
 
 Given that
 
@@ -296,15 +301,15 @@ $\pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) = \nabla_\theta \pi_\theta(a
 
 we can also write
 
-$\nabla_\theta J(\theta) = \sum_s d_\gamma^{\pi_\theta}(s) \sum_a \nabla_\theta \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+$\nabla_\theta J(\theta) = \sum_s d^{\pi_\theta}(s) \sum_a \nabla_\theta \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
 
 We can use the formulation above and explicitly sum over actions if possible, but more often in practice we sample actions, so the $\log \pi_\theta$ form comes back:
 
-$\nabla_\theta J(\theta) = \mathbb{E}_{s \sim d_\gamma^{\pi_\theta}} \mathbb{E}_{a \sim \pi_\theta(\cdot|s)} [\nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)]$
+$\nabla_\theta J(\theta) = \mathbb{E}_{s \sim d^{\pi_\theta}} \mathbb{E}_{a \sim \pi_\theta(\cdot|s)} [\nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)]$
 
 This is called the policy gradient theorem.
 
-Effectively we can replace expectations over trajectories with expectations over state distribution.
+Effectively we can replace expectations over trajectories with expectations over state distribution under current policy.
 
 
 \section{Generalized Advantage Estimation (GAE-$\lambda$) }
