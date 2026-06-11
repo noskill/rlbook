@@ -153,7 +153,10 @@ Abstract text.
 
 \subsection*{Trajectory or path or episode}
 
-$\tau = (s_0, a_0, r_0, s_1, a_1, r_1, \dots, s_T)$
+\begin{equation}
+\label{eq:trajectory}
+\tau = (s_0, a_0, r_0, s_1, a_1, r_1, \dots, s_T)
+\end{equation}
 
 Where:
 \begin{itemize}
@@ -163,83 +166,135 @@ Where:
 	\item $T$: episode length
 \end{itemize}
 
-Policy: $\pi_\theta(a_t | s_t)$
+Policy:
+\begin{equation}
+\label{eq:policy}
+\pi_\theta(a_t | s_t)
+\end{equation}
 
 \subsection*{Discounted return}
 
 \textcolor{red}{todo - infinite vs finite horizon}
 
-$R(\tau) = \sum_{t=0}^T \gamma^t r_t$
+\begin{equation}
+\label{eq:discounted-return}
+R(\tau) = \sum_{t=0}^T \gamma^t r_t
+\end{equation}
 
 This is a discounted return over the whole trajectory. For infinite trajectory we should use $\gamma < 1$ to make it a convergent series, but in practice it’s possible to omit this constant e.g. when episodes are short or there is just one final reward etc..
 
 Future discounted returns from time $t$:
 
-$G_t = \gamma^t \sum_{k=t}^T \gamma^{k-t} r_k$ \quad or \quad $G_t = \sum_{k=t}^T \gamma^k r_k$
+\begin{equation}
+\label{eq:future-discounted-return}
+G_t = \gamma^t \sum_{k=t}^T \gamma^{k-t} r_k
+\quad \text{or} \quad
+G_t = \sum_{k=t}^T \gamma^k r_k
+\end{equation}
 
 Objective (expected return):
 
-$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [R(\tau)]$
+\begin{equation}
+\label{eq:objective-expectation}
+J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [R(\tau)]
+\end{equation}
 
-$J(\theta) = \int \pi_\theta(\tau)R(\tau) d\tau$
+\begin{equation}
+\label{eq:objective-integral}
+J(\theta) = \int \pi_\theta(\tau)R(\tau) d\tau
+\end{equation}
 
 \section*{Policy gradient derivation}
 Take gradient of the objective:
-$\nabla_\theta J(\theta) = \int \nabla_\theta \pi_\theta(\tau)R(\tau) d\tau$
+\begin{equation}
+\label{eq:objective-gradient-integral}
+\nabla_\theta J(\theta) = \int \nabla_\theta \pi_\theta(\tau)R(\tau) d\tau
+\end{equation}
 
 Log-derivative trick:
 
-$log' f(x)= \frac {f'(x) } {f(x)} => f'(x) =f(x) log' f(x)$
+\begin{equation}
+\label{eq:log-derivative-trick}
+\log' f(x)= \frac {f'(x) } {f(x)} \Rightarrow f'(x) =f(x) \log' f(x)
+\end{equation}
 
 %
 Using this identity we get:
 
-$\nabla_\theta J(\theta) = \int_{\tau \sim \pi_\theta(\tau)} 
-\pi_\theta(\tau) \nabla_\theta \log \pi_\theta(\tau) R(\tau)$
+\begin{equation}
+\label{eq:score-function-integral}
+\nabla_\theta J(\theta) = \int \pi_\theta(\tau) \nabla_\theta \log \pi_\theta(\tau) R(\tau) d\tau
+\end{equation}
 
 Replace integral with expectation:
 
-$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [\nabla_\theta \log \pi_\theta(\tau) R(\tau)]$
+\begin{equation}
+\label{eq:score-function-expectation}
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [\nabla_\theta \log \pi_\theta(\tau) R(\tau)]
+\end{equation}
 
 In this equation we have for $\pi_\theta(\tau)$:
 
-$\pi_\theta(\tau) = p(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)$
+\begin{equation}
+\label{eq:trajectory-probability}
+\pi_\theta(\tau) = p(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)
+\end{equation}
 
 if we take log of this product we get sum:
 
-$\log \pi_\theta(\tau) = \log p(s_0) +  \sum_{t=0}^{T-1} \log \pi_\theta(a_t|s_t) + \sum_{t=0}^{T-1} \log  p(s_{t+1}|s_t, a_t)
-$
+\begin{equation}
+\label{eq:trajectory-log-probability}
+\log \pi_\theta(\tau) = \log p(s_0) +  \sum_{t=0}^{T-1} \log \pi_\theta(a_t|s_t) + \sum_{t=0}^{T-1} \log p(s_{t+1}|s_t, a_t)
+\end{equation}
 
 Now take gradient with respect to $\theta$, terms not depending on $\theta$ drop.
 
-$\nabla_\theta \log \pi_\theta(\tau) = \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t | s_t)$
+\begin{equation}
+\label{eq:trajectory-score}
+\nabla_\theta \log \pi_\theta(\tau) = \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t | s_t)
+\end{equation}
 
 Plug this expression back to the equation:
 
-$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t | s_t)  R(\tau) $
+\begin{equation}
+\label{eq:policy-gradient-full-return}
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t | s_t)  R(\tau)
+\end{equation}
 
 
 Since past rewards don’t depend on current(or future) action at  we can replace $R(\tau)$ with $G_t$.
 
 \textcolor{red}{proof - todo} 
  
-$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t | s_t)  G_t $
+\begin{equation}
+\label{eq:reinforce-gradient}
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t | s_t)  G_t
+\end{equation}
 
 \section{Q and Value Functions}
 Now we can extract Q and value functions from the expection above:
 
-$Q_{\pi_\theta}(s_t, a_t) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{k=t}^T \gamma^{k-t} r_k | s_t, a_t $
+\begin{equation}
+\label{eq:q-function}
+Q_{\pi_\theta}(s_t, a_t) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \left[ \sum_{k=t}^T \gamma^{k-t} r_k \mid s_t, a_t \right]
+\end{equation}
 
-$V_{\pi_\theta}(s_t) = \mathbb{E}_{a \sim \pi_\theta(s)} Q_{\pi_\theta}(a_t, s_t)$
+\begin{equation}
+\label{eq:value-function}
+V_{\pi_\theta}(s_t) = \mathbb{E}_{a \sim \pi_\theta(s)} Q_{\pi_\theta}(a_t, s_t)
+\end{equation}
 
 This is a relative time which allows for bellman expectation form(see below in Useful identities section).
 
 With $G_t = \gamma^t \sum_{k=t}^T \gamma^{k-t} r_k$
 
-we can rewrite out gradient to 
+we can rewrite our gradient to 
 
 
-$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{t=0}^T \gamma^t \nabla_\theta \log \pi_\theta(a_t | s_t) Q^{\pi_\theta}(s_t, a_t) $
+\begin{equation}
+\label{eq:policy-gradient-q-form}
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)}  \sum_{t=0}^T \gamma^t \nabla_\theta \log \pi_\theta(a_t | s_t) Q^{\pi_\theta}(s_t, a_t)
+\end{equation}
 
 
 $\gamma^t$ comes from $G_t$
@@ -251,9 +306,17 @@ in practice we can drop $\gamma^t$ or use different future discount functions e.
 $\gamma^t$ might drop to too small values for long episodes. For example:
 
 
-$\gamma=0.95^{t=150} \approx 1500.00045$ vs
+\begin{equation}
+\label{eq:exponential-discount-example}
+\gamma=0.95^{t=150} \approx 1500.00045
+\end{equation}
 
-$\frac{1} {1+ \frac{t=150}{d=2}} \approx  0.013$ 
+vs
+
+\begin{equation}
+\label{eq:hyperbolic-discount-example}
+\frac{1} {1+ \frac{t=150}{d=2}} \approx  0.013
+\end{equation}
 
 
 \section*{State distribution view}
@@ -261,51 +324,84 @@ We can marginalise distribution of trajectories $\pi_\theta(\tau)$ to $d^{\pi_\t
 
 Factor one term for time $t$ inside trajectory summation:
 
-$\nabla_\theta \log \pi_\theta(a_t|s_t) Q^{\pi_\theta}(s_t,a_t)$
+\begin{equation}
+\label{eq:state-distribution-term}
+\nabla_\theta \log \pi_\theta(a_t|s_t) Q^{\pi_\theta}(s_t,a_t)
+\end{equation}
 
 becomes:
 
-$\sum_s \sum_a P(s_t=s, a_t=a) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+\begin{equation}
+\label{eq:state-action-marginal}
+\sum_s \sum_a P(s_t=s, a_t=a) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
+\end{equation}
 
 Given that
 
-$P(s_t=s, a_t=a) = P(s_t=s)\pi_\theta(a|s)$,
+\begin{equation}
+\label{eq:state-action-factorization}
+P(s_t=s, a_t=a) = P(s_t=s)\pi_\theta(a|s)
+\end{equation}
 
 we get
 
-$\sum_s P(s_t=s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+\begin{equation}
+\label{eq:state-distribution-one-step}
+\sum_s P(s_t=s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
+\end{equation}
 
 This is where the state distribution appears.
 
 Put the factored equation into $\nabla_\theta J(\theta)$:
 
-$ \sum_s \left( \sum_{t=0}^T \gamma^t P(s_t=s) \right) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+\begin{equation}
+\label{eq:policy-gradient-state-sum-expanded}
+\sum_s \left( \sum_{t=0}^T \gamma^t P(s_t=s) \right) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
+\end{equation}
 
 Define the discounted state visitation distribution:
 
-$d_\gamma^{\pi_\theta}(s) = \sum_{t=0}^T \gamma^t P(s_t=s)$
+\begin{equation}
+\label{eq:discounted-state-visitation-unnormalized}
+d_\gamma^{\pi_\theta}(s) = \sum_{t=0}^T \gamma^t P(s_t=s)
+\end{equation}
 
 Note: it is unnormalised.
 
 Proper distribution:
 
-$d^{\pi_\theta}(s) = (1-\gamma) \sum_{t=0}^{T} \gamma^t d^{\pi_\theta}_t(s)$
+\begin{equation}
+\label{eq:discounted-state-visitation}
+d^{\pi_\theta}(s) = (1-\gamma) \sum_{t=0}^{T} \gamma^t d^{\pi_\theta}_t(s)
+\end{equation}
 
 Then
 
-$\nabla_\theta J(\theta) = \sum_s d^{\pi_\theta}(s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+\begin{equation}
+\label{eq:policy-gradient-state-sum-log}
+\nabla_\theta J(\theta) = \sum_s d^{\pi_\theta}(s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
+\end{equation}
 
 Given that
 
-$\pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) = \nabla_\theta \pi_\theta(a|s)$,
+\begin{equation}
+\label{eq:score-to-policy-gradient}
+\pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) = \nabla_\theta \pi_\theta(a|s)
+\end{equation}
 
 we can also write
 
-$\nabla_\theta J(\theta) = \sum_s d^{\pi_\theta}(s) \sum_a \nabla_\theta \pi_\theta(a|s) Q^{\pi_\theta}(s,a)$
+\begin{equation}
+\label{eq:policy-gradient-state-sum-direct}
+\nabla_\theta J(\theta) = \sum_s d^{\pi_\theta}(s) \sum_a \nabla_\theta \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
+\end{equation}
 
 We can use the formulation above and explicitly sum over actions if possible, but more often in practice we sample actions, so the $\log \pi_\theta$ form comes back:
 
-$\nabla_\theta J(\theta) = \mathbb{E}_{s \sim d^{\pi_\theta}} \mathbb{E}_{a \sim \pi_\theta(\cdot|s)} [\nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)]$
+\begin{equation}
+\label{eq:policy-gradient-theorem}
+\nabla_\theta J(\theta) = \mathbb{E}_{s \sim d^{\pi_\theta}} \mathbb{E}_{a \sim \pi_\theta(\cdot|s)} [\nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)]
+\end{equation}
 
 This is called the policy gradient theorem.
 
@@ -323,18 +419,33 @@ Effectively we can replace expectations over trajectories with expectations over
 Bellman expectation form:
 
 
-$V^{\pi_\theta}(s) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [r(s,a) + \gamma V^\pi(s')]$
+\begin{equation}
+\label{eq:bellman-v}
+V^{\pi_\theta}(s) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [r(s,a) + \gamma V^\pi(s')]
+\end{equation}
 
-$Q^{\pi_\theta}(s,a) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [r_t + \gamma V^{\pi_\theta}(s_{t+1}) | s_t=s, a_t=a]$
+\begin{equation}
+\label{eq:bellman-q-v}
+Q^{\pi_\theta}(s,a) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [r_t + \gamma V^{\pi_\theta}(s_{t+1}) | s_t=s, a_t=a]
+\end{equation}
 
-$Q^{\pi_\theta}(s,a) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [r_t + \gamma \mathbb{E}_{a' \sim \pi_\theta(\cdot|s')} [Q^{\pi_\theta}(s', a')]]$
+\begin{equation}
+\label{eq:bellman-q-q}
+Q^{\pi_\theta}(s,a) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} [r_t + \gamma \mathbb{E}_{a' \sim \pi_\theta(\cdot|s')} [Q^{\pi_\theta}(s', a')]]
+\end{equation}
 
 
 With relative time $G_t$:
 
-$G_t = r_t + \gamma r_{t+1} + \gamma ^2 r_{t+2} + ...$
+\begin{equation}
+\label{eq:relative-return-expanded}
+G_t = r_t + \gamma r_{t+1} + \gamma ^2 r_{t+2} + \dots
+\end{equation}
 
-$V^{\pi_\theta}(s) = \mathbb{E}_{\pi_\theta} \left[ G_t|s_t=s \right]$
+\begin{equation}
+\label{eq:value-as-expected-return}
+V^{\pi_\theta}(s) = \mathbb{E}_{\pi_\theta} \left[ G_t|s_t=s \right]
+\end{equation}
 
 \end{document}
 
