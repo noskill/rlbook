@@ -326,13 +326,13 @@ Factor one term for time $t$ inside trajectory summation:
 
 \begin{equation}
 \label{eq:state-distribution-term}
-\nabla_\theta \log \pi_\theta(a_t|s_t) Q^{\pi_\theta}(s_t,a_t)
+\gamma^t \nabla_\theta \log \pi_\theta(a_t|s_t) Q^{\pi_\theta}(s_t,a_t)
 \end{equation}
 
 becomes:
 
 \begin{equation}
-\label{eq:state-action-marginal}
+\gamma^t \label{eq:state-action-marginal}
 \sum_s \sum_a P(s_t=s, a_t=a) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
 \end{equation}
 
@@ -347,7 +347,7 @@ we get
 
 \begin{equation}
 \label{eq:state-distribution-one-step}
-\sum_s P(s_t=s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
+\gamma^t \sum_s P(s_t=s) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
 \end{equation}
 
 This is where the state distribution appears.
