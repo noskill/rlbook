@@ -359,17 +359,32 @@ Put the factored equation into $\nabla_\theta J(\theta)$:
 \sum_s \left( \sum_{t=0}^T \gamma^t P(s_t=s) \right) \sum_a \pi_\theta(a|s) \nabla_\theta \log \pi_\theta(a|s) Q^{\pi_\theta}(s,a)
 \end{equation}
 
+First we define time-indexed state distribution:
+$d_t^{\pi_\theta}(s) = P(s_t = s)$
+
 Define the discounted state visitation distribution:
+
 
 \begin{equation}
 \label{eq:discounted-state-visitation-unnormalized}
-d_\gamma^{\pi_\theta}(s) = \sum_{t=0}^T \gamma^t P(s_t=s)
+d_\gamma^{\pi_\theta}(s) = \sum_{t=0}^T \gamma^t d_t^{\pi_\theta}(s)
 \end{equation}
 
 Note: it is unnormalised.
 
-Proper distribution:
+$  Z_T = \sum_s d_{\gamma,\mathrm{unnorm}}^{\pi_\theta}(s)
+= \sum_{t=0}^{T} \gamma^t
+= \frac{1-\gamma^{T+1}}{1-\gamma}
+$
 
+Proper distribution:
+$ d_\gamma^{\pi_\theta}(s)
+= \frac{1}{Z_T} \sum_{t=0}^{T} \gamma^t d_t^{\pi_\theta}(s)
+= \frac{1-\gamma}{1-\gamma^{T+1}}
+\sum_{t=0}^{T} \gamma^t d_t^{\pi_\theta}(s)
+$
+
+in the limit as $T \rightarrow inf$ we get 
 \begin{equation}
 \label{eq:discounted-state-visitation}
 d^{\pi_\theta}(s) = (1-\gamma) \sum_{t=0}^{T} \gamma^t d^{\pi_\theta}_t(s)
@@ -407,6 +422,8 @@ This is called the policy gradient theorem.
 
 Effectively we can replace expectations over trajectories with expectations over state distribution under current policy.
 
+
+Note: in practice we rarely sample from this normalised distribution, e.g. often distribution of states is uniform if we ran policy constant number of steps.
 
 \section{Generalized Advantage Estimation (GAE-$\lambda$) }
 
