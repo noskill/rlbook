@@ -423,7 +423,10 @@ This is called the policy gradient theorem.
 Effectively we can replace expectations over trajectories with expectations over state distribution under current policy.
 
 
-Note: in practice we rarely sample from this normalised distribution, e.g. often distribution of states is uniform if we ran policy constant number of steps.
+Note: in practice we rarely sample from this normalised distribution, e.g. often distribution of states is uniform if we ran policy constant number of steps. We have got relative time Q or Value function because we have moved $\gamma^t$ factor into state probability. 
+
+But we still can apply this form for different state distribution. Depending on the problem and discount $\gamma$ it might induce different optimal policy. Different but not necessary worse: for example small enough $\gamma=0.8$ or very long episodes will virtually turn off learning for later parts of episodes with absolute time returns while relative time returns still provide meaningful learning signal throughout the episode.
+
 
 \section{Generalized Advantage Estimation (GAE-$\lambda$) }
 
