@@ -427,7 +427,20 @@ Note: in practice we rarely sample from this normalised distribution, e.g. often
 
 But we still can apply this form for different state distribution. Depending on the problem and discount $\gamma$ it might induce different optimal policy. Different but not necessary worse: for example small enough $\gamma=0.8$ or very long episodes will virtually turn off learning for later parts of episodes with absolute time returns while relative time returns still provide meaningful learning signal throughout the episode.
 
+The objective often used in practice is closer to
 
+\begin{equation}
+\label{practical-objective}
+J_{\mu}(\theta)=\mathbb{E}_{s \sim \mu, a \sim \pi_\theta} \log   \pi(\cdot | s) A_{\pi_\theta}(s, a)
+\end{equation}
+
+where 
+\begin{equation}
+\label{uniform-in-time-distribution}
+\mu(s) = \frac{1}{H} \sum_{t=0}^{H-1} d_t^{\pi \theta}(s)
+\end{equation}
+
+This is a uniform-in-time visitation distribution, not the discounted visitation distribution.
 \section{Generalized Advantage Estimation (GAE-$\lambda$) }
 
 \textcolor{red}{todo}
